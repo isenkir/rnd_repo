@@ -1,0 +1,39 @@
+services:
+  api_service:
+    build: ./api_service
+    ports:
+      - 8080:8080
+    restart: always
+
+  predictor_service:
+    build: ./predictor_service
+    ports:
+      - 5001:5001
+    restart: always
+
+  mlflow:
+    command:
+    - "mlflow server --backend-store-uri=sqlite:///ml.db --host=0.0.0.0 --default-artifact-root ./mlartifacts"
+    image: adacotechjp/mlflow:1.22.0
+    ports:
+      - 5000:5000
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./rules.yml:/etc/prometheus/rules.yml
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana.ini:/etc/grafana/grafana.ini
+    links:
+      - prometheus
+    restart: always

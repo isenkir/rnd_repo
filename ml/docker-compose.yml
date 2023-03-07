@@ -1,0 +1,37 @@
+services:
+  api_service:
+    image: isenkir/api_service:0.1
+    ports:
+      - 5000:5000
+
+  predictor_service:
+    image: isenkir/predictor_service:0.1
+    ports:
+      - 5001:5001
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./rules.yml:/etc/prometheus/rules.yml
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana.ini:/etc/grafana/grafana.ini
+    links:
+      - prometheus
+    restart: always
+
+  mlflow:
+    command:
+      - "mlflow server --backend-store-uri=sqlite:///ml.db --host=0.0.0.0 --default-artifact-root ./mlartifacts"
+    image: adacotechjp/mlflow:1.30.0
+    ports:
+      - 5000:5000
+    restart: always
